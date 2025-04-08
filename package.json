@@ -1,0 +1,11 @@
+{
+  "name": "saldos-chile",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "puppeteer-core": "^24.6.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
