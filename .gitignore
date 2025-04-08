@@ -1,3 +1,4 @@
-outputs/*
+outputs/*.png
+outputs/*.txt
 node_modules
 .vscode
