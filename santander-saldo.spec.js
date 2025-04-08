@@ -36,45 +36,40 @@ puppeteer.launch(launch_options).then(async browser => {
     waitUntil: 'domcontentloaded',
   })
 
-  await randomDelay()
+  // esperamos a que desaparezca el loader
+  await page.waitForFunction(() => {
+    const loader = document.querySelector('.bgLoader')
+    return loader && window.getComputedStyle(loader).display === 'none'
+  }, { timeout: 30000 })
+
   // Esperar y hacer clic en botón "Ingresar"
   await page.screenshot({ path: 'outputs/santander-home.png' })
-  await page.waitForSelector('#btnIngresar', { visible: true })
-  await page.screenshot({ path: 'outputs/santander-post-boton-ingresar.png' })
-  await randomDelay()
+  await page.waitForSelector('#btnIngresar', { visible: true, hidden: false, timeout: 30000 })
   await page.click('#btnIngresar')
-  await randomDelay()
 
-  // Esperar a que cargue el iframe del login
-  await page.waitForSelector('iframe', { timeout: 15000 })
 
-  // Cambiar el contexto al iframe
+  await page.screenshot({ path: 'outputs/santander-post-boton-ingresar.png' })
+  // Esperar a que cargue el iframe del login para luego seguir con el login en si.
+  await page.waitForSelector('iframe', { visible: true, timeout: 30000 })
   const loginFrame = await page.frames().find(frame => frame.url().includes('login-frame/ing/0010'))
   if (!loginFrame) {
     throw new Error('No se encontró el iframe del login.')
   }
-
-  await randomDelay()
-
-  // Esperar a que cargue el contenedor del login (formulario) dentro del iframe
-  await loginFrame.waitForSelector('#iframe-login-box', { timeout: 15000 })
+  await loginFrame.waitForSelector('#iframe-login-box', { timeout: 30000 })
   await page.screenshot({ path: 'outputs/santander-login.png' })
-  // Escribir RUT (asegúrate de que esté bien formateado)
   await loginFrame.type('#rut', process.env.SANTANDER_RUT, { delay: 100 })
   await loginFrame.type('#pass', process.env.SANTANDER_PASS, { delay: 100 })
   await randomDelay()
-
   await page.screenshot({ path: 'outputs/santander-pre-submit-login.png' })
-  // Click en botón Ingresar
   await loginFrame.click('button[type="submit"]')
   await randomDelay()
   
-  await page.screenshot({ path: 'outputs/santander-pre-cuentas.png' })
-  await page.waitForSelector('.box-product', { timeout: 20000 }) // espera que cargue la vista de cuentas
 
-  
-  await randomDelay()
-  // Extraer el monto de la Cuenta Corriente
+  // Esperar a que cargue el iframe de la cuenta
+  await page.screenshot({ path: 'outputs/santander-pre-cuentas.png' })
+  await page.waitForSelector('.box-product', { timeout: 30000 })
+
+  // Obtenemos el monto de la primera cuenta corriente que encontramos.
   const cuentaCorrienteMonto = await page.evaluate(() => {
     // Buscar todos los bloques de producto
     const productos = document.querySelectorAll('.box-product')
@@ -90,6 +85,8 @@ puppeteer.launch(launch_options).then(async browser => {
   })
   await page.screenshot({ path: 'outputs/santander-cuentas.png' })
   const amount = cuentaCorrienteMonto.replace('$', '').replace(/\./g, '')
+
+  // Imrimimos el monto en consola y lo guardamos en un archivo.
   console.log('Extracted amount:', amount)
   fs.writeFileSync('outputs/santander-saldo.txt', amount)
 
