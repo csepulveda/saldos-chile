@@ -24,8 +24,6 @@ if (process.env.DOCKER === "true") {
 
 // Apply stealth
 puppeteer.use(StealthPlugin())
-console.log('Launching browser with options:', launch_options)
-
 puppeteer.launch(launch_options).then(async browser => {
   const page = await browser.newPage()
 
@@ -84,10 +82,10 @@ puppeteer.launch(launch_options).then(async browser => {
     return null // Si no encuentra
   })
   await page.screenshot({ path: 'outputs/santander-cuentas.png' })
-  const amount = cuentaCorrienteMonto.replace('$', '').replace(/\./g, '')
+  const amount = cuentaCorrienteMonto.replace('$', '').replace(/\./g, '').replace(' ', '')
 
-  // Imrimimos el monto en consola y lo guardamos en un archivo.
-  console.log('Extracted amount:', amount)
+  // Imprimimos el monto en consola y lo guardamos en un archivo.
+  console.log('Saldo Santander:', amount)
   fs.writeFileSync('outputs/santander-saldo.txt', amount)
 
   await browser.close()

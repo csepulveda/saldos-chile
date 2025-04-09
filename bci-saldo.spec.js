@@ -26,8 +26,6 @@ if (process.env.DOCKER === "true") {
 
 // Apply stealth
 puppeteer.use(StealthPlugin())
-console.log('Launching browser with options:', launch_options)
-
 puppeteer.launch(launch_options).then(async browser => {
   const page = await browser.newPage()
   await page.goto('https://www.bci.cl/personas')
@@ -63,8 +61,8 @@ puppeteer.launch(launch_options).then(async browser => {
   await page.screenshot({ path: 'outputs/bci-cuentas.png' })
 
   // Imprimimos el saldo en consola y lo guardamos en un archivo
-  const amount = amountText.replace('$', '').replace(/\./g, '')
-  console.log('Extracted amount:', amount)
+  const amount = amountText.replace('$', '').replace(/\./g, '').replace(' ', '')
+  console.log('Saldo BCI:', amount)
   fs.writeFileSync('outputs/bci-saldo.txt', amount)
 
   await browser.close()
