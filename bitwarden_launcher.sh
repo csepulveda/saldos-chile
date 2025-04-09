@@ -2,28 +2,19 @@
 
 
 
-session=$(cat /tmp/bw_session)
-if [ -z "$session" ]; then
-    echo "Failed to retrieve session key."
-    exit 1
-fi
-# Check if the session key is valid
-if ! bw sync --session "$session"; then
-    echo "Failed to sync Bitwarden. Please check your credentials."
-    echo "Run 'bw unlock' to refresh your session."
-    exit 1
-fi
+
+
 
 check_session() {
     if [ ! -f /tmp/bw_session ]; then
         create_session
     fi
 
+    session=$(cat /tmp/bw_session)
     if ! bw sync --session "$session"; then
-        echo "Failed to sync Bitwarden. Please check your credentials."
+        echo "Failed to sync Bitwarden. Executing create_session..."
         create_session
     fi
-
 }
 
 create_session() {
@@ -57,7 +48,7 @@ get_saldo_santander() {
     docker run -i -e SANTANDER_RUT=$SANTANDER_RUT -e SANTANDER_PASS=$SANTANDER_PASS --cap-add=SYS_ADMIN saldos-chile node santander-saldo.spec.js
 } 
 
-
+check_session
 get_saldo_bci &
 get_saldo_santander &
 wait
