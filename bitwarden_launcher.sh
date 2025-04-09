@@ -1,10 +1,4 @@
 #!/bin/bash
-
-
-
-
-
-
 check_session() {
     if [ ! -f /tmp/bw_session ]; then
         create_session
