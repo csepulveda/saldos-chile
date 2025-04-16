@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: saldos
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: saldos-chile
+  namespace: saldos
+type: Opaque
+stringData:
+  SANTANDER_RUT: "your-santander-rut"
+  SANTANDER_PASS: "your-santander-password"
+  BCI_RUT: "your-bci-rut"
+  BCI_PASS: "your-bci-password"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: santander-saldo
+  namespace: saldos
+spec:
+  schedule: "0 */4 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: santander-saldo
+            image: ghcr.io/csepulveda/saldos-chile:v1.0.0
+            command: ["node", "santander-saldo.spec.js"]
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "500m"
+            env:
+              - name: SANTANDER_RUT
+                valueFrom:
+                  secretKeyRef:
+                    name: saldos-chile
+                    key: SANTANDER_RUT
+              - name: SANTANDER_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: saldos-chile
+                    key: SANTANDER_PASS
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bci-saldo
+  namespace: saldos
+spec:
+  schedule: "0 */4 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: bci-saldo
+            image: ghcr.io/csepulveda/saldos-chile:v1.0.0
+            command: ["node", "bci-saldo.spec.js"]
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "500m"
+            env:
+              - name: BCI_RUT
+                valueFrom:
+                  secretKeyRef:
+                    name: saldos-chile
+                    key: BCI_RUT
+              - name: BCI_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: saldos-chile
+                    key: BCI_PASS
