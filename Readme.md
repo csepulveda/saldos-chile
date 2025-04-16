@@ -87,5 +87,12 @@ SANTANDER_RUT=xxxxx SANTANDER_PASS=yyyyy node santander-saldo.spec.js
 
 ---
 
+## Correr en Kubernetes
+Para ejecutar en kubernetes debes modificar el archivo `kubernetes.yaml` con los valores necesarios en el secret y dejar los cronjobs del banco que quieras consultar.
+
+de momento los montos solo se escriban en los logs.
+
+---
+
 Si quieres aportar o agregar más bancos, feliz de recibir PRs.  
 Esto es solo un experimento para entender cómo automatizar este tipo de cosas 🙃
